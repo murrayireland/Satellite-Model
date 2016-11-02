@@ -7,21 +7,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.basemap import Basemap
 from tqdm import tqdm
 
 # Load data
 from OrbitModel import OrbitModel
 import UniversalProps, EarthProps, SatProps
+import Data, Plots
 
 # Set parameters of orbit
 OrbitalElements = {'Semi-major axis' : 6978.1e3,
     'Eccentricity' : 0.0,
-    'Inclination' : 97.7,
+    'Inclination' : 10,
     'Right ascension' : 0,
     'Argument of perigee' : 0}
 
 # Number of orbits to simulate
-NumOrbits = 4
+NumOrbits = 2
 
 # Initialise simulation object
 Sim = OrbitModel( OrbitalElements, UniversalProps, EarthProps, SatProps, NumOrbits )
@@ -30,20 +32,23 @@ Sim = OrbitModel( OrbitalElements, UniversalProps, EarthProps, SatProps, NumOrbi
 NSamps = Sim.RunTime/Sim.SampleTime
 NSamps = int( np.floor( NSamps ) + 1 )
 NStates = Sim.States.shape
-Time = np.zeros(NSamps)
-States = np.zeros(( NStates[0], NSamps))
+Data.Time = np.zeros(NSamps)
+Data.States = np.zeros(( NStates[0], NSamps ))
+Data.StatesECEF = np.zeros(( 6, NSamps ))
+Data.LatLongAlt = np.zeros(( 3, NSamps ))
 
 # Simulation loop
 k = 0
-t = Sim.Time
-ts = Sim.Time
 NumSteps = int( Sim.RunTime/Sim.TimeStep ) + 1
 SampFreq = int( Sim.SampleTime/Sim.TimeStep )
-States[:,0] = Sim.States.A1
+Data.Time[0] = Sim.Time
+Data.States[:,0] = Sim.States
+Data.StatesECEF[:,0] = Sim.StatesECEF
+Data.LatLongAlt[:,0] = Sim.LatLongAlt
 
 pbar = tqdm( total = Sim.RunTime )
 
-for i in range(1,NumSteps) :
+for i in xrange(1,NumSteps) :
 
     # Update model
     Sim.UpdateModel()
@@ -51,17 +56,25 @@ for i in range(1,NumSteps) :
     # Save data
     if ( i % SampFreq == 0 ) :
         k = k + 1
-        Time[k] = Sim.Time
-        States[:,k] = Sim.States.A1
+        Data.Time[k] = Sim.Time
+        Data.States[:,k] = Sim.States
+        Data.StatesECEF[:,k] = Sim.StatesECEF
+        Data.LatLongAlt[:,k] = Sim.LatLongAlt
 
     # Update progress bar
     pbar.update( Sim.TimeStep )
 
 pbar.close()
 
-fig = plt.figure( dpi=267, figsize=[5,5], facecolor='black' )
-ax = fig.add_subplot( 111, projection='3d', axisbg='black' )
-plt.plot( States[0,:], States[1,:], States[2,:], 'red' )
-plt.axis( 'equal' )
-plt.axis( 'off' )
+# Concatenate Data
+print(Data.Time.shape)
+Labels = ['Time', 'x', 'y', 'z', 'u', 'v', 'w', 'x_ecef', 'y_ecef', 'z_ecef', 'u_ecef', 'v_ecef', 'w_ecef', 'Lat', 'Long', 'Alt' ]
+AllData = np.column_stack( (Data.Time, Data.States.T, Data.StatesECEF.T, Data.LatLongAlt.T ) )
+
+# Save Data
+np.savetxt( 'Data.csv', AllData, delimiter=',' )
+
+# Plots
+Plots.Plot3DPath( Data )
+Plots.PlotGroundTrack( Data )
 plt.show()
