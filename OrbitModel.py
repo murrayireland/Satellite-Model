@@ -244,4 +244,4 @@ class OrbitModel :
       def ECEF2Geomagnetic( self, XECEF ) :
             # Convert ECEF properties to geomagnetic
 
-            
+            return 0

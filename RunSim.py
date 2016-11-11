@@ -28,7 +28,7 @@ PresetOrbit = 'Molniya'
 OrbitalElements = PresetOrbits[PresetOrbit]
 
 # Number of orbits to simulate
-NumOrbits = 0.2
+NumOrbits = 1
 
 # Initialise simulation object
 Sim = OrbitModel( OrbitalElements, UniversalProps, EarthProps, SatProps, NumOrbits )
