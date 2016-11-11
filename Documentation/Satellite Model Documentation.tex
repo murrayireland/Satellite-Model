@@ -1,0 +1,43 @@
+\documentclass[11pt,a4paper,oneside]{report}
+
+\include{./tex/Preamble}
+
+%\includeonly{./tex/FrontMatter,./tex/Introduction,./tex/Conclusions}
+%\includeonly{./tex/Appendices}
+
+\begin{document}
+
+% FRONT MATTER -------------------------------------------
+\include{./tex/TitlePage}
+\cleardoublepage
+
+\thesisstyle{}
+\onehalfspacing
+\pagestyle{front}
+	
+\include{./tex/FrontMatter}
+
+% MAIN MATTER --------------------------------------------
+\pagestyle{main}
+
+\renewcommand{\chaptermark}[1]{\markboth{\textsc{#1}}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\enspace\textsc{#1}}{}}
+
+\include{./tex/Introduction}
+\cleardoublepage
+
+\include{./tex/OrbitalDynamics}
+\cleardoublepage
+
+% APPENDICES & BACK MATTER -------------------------------
+\include{./tex/Appendices}
+\clearpage
+
+% Bibliography
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{mybibstyle}
+\bibliography{Bibliography}
+%\printbibliography
+
+
+\end{document}

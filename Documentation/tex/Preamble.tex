@@ -1,0 +1,308 @@
+% PREAMBLE
+
+\renewcommand{\rmdefault}{ptm} % Makes font Roman
+%\renewcommand{\rmdefault}{pplj}
+%\oldstylenums
+
+% PACKAGES ------------------------------------------------------------------
+
+% Graphics
+\usepackage{graphicx}
+\usepackage[sc]{caption}
+\usepackage{subcaption}
+\usepackage{epstopdf}
+\usepackage{psfrag}
+\usepackage{tikz}
+
+% Maths
+%\usepackage{amsmath}
+%\usepackage{amsfonts}
+\usepackage{siunitx}
+\usepackage{mathtools}
+
+% Formatting
+\usepackage{fancyhdr}
+\usepackage{supertabular}
+\usepackage{booktabs}
+\usepackage[bookmarks=true,hidelinks,bookmarksnumbered]{hyperref}
+\usepackage[noindentafter]{titlesec}
+\usepackage{titletoc}
+\usepackage{geometry}
+\usepackage{longtable}
+%\usepackage{fontspec}
+%\usepackage[osf,sc]{mathpazo}
+%\usepackage{yfonts}
+\usepackage{color}
+%\usepackage{lettrine}
+\usepackage{setspace}
+%\usepackage{xstring}
+\usepackage{tabu}
+%\usepackage[T1]{fontenc}
+%\usepackage{soul}
+\usepackage{rotating}
+%\usepackage{bold-extra}
+\usepackage{appendix}
+\usepackage[nostamp]{draftwatermark}
+%\usepackage{draftwatermark}
+\SetWatermarkLightness{0.9}
+%\usepackage{placeins}
+%\usepackage{newtxmath}
+\usepackage{txfonts}
+
+% Lists
+\usepackage[round]{natbib}
+%\usepackage{biblatex}
+
+% Others
+\usepackage[british]{babel}
+\usepackage{multirow}
+\usepackage[textsize=footnotesize]{todonotes}
+\presetkeys{todonotes}{backgroundcolor=yellow}{}
+
+\setcounter{MaxMatrixCols}{20}
+
+\graphicspath{{img/}}
+
+% TIKZ --------------------------------------------------
+
+\usetikzlibrary{shapes,arrows}
+
+\tikzstyle{base} = [draw, text centered, thick]
+\tikzstyle{block} = [base, rectangle]
+\tikzstyle{decision} = [base, diamond, aspect=3]
+\tikzstyle{line} = [draw, -latex', thick]
+\tikzstyle{coord} = [coordinate, on grid]
+
+% BIBLIOGRAPHY ------------------------------------------
+
+%\addbibresource{Bibliography.bib}
+
+% COMMANDS ----------------------------------------------
+
+\newcommand{\comment}[1]{{\color{red}#1}}
+
+% Vectors and matrices
+\newcommand{\e}[1]{\times 10^{#1}}
+\newcommand{\vc}[1]{\boldsymbol{\mathbf{#1}}}
+
+% Trigonometry
+\newcommand{\cphi}{\cos\phi}
+\newcommand{\ctheta}{\cos\theta}
+\newcommand{\cpsi}{\cos\psi}
+\newcommand{\sphi}{\sin\phi}
+\newcommand{\stheta}{\sin\theta}
+\newcommand{\spsi}{\sin\psi}
+
+% Frame of reference
+\newcommand{\Bframe}{\mathcal{B}}
+\newcommand{\Wframe}{\mathcal{W}}
+
+
+% STYLES --------------------------------------------------------------------------
+
+\contentsuse{figure}{lof}
+\contentsuse{table}{lot}
+\renewcommand{\captionfont}{\bf}
+
+% STRETCH TABLE SPACING
+%\renewcommand{\arraystretch}{1.2}
+
+% FIX JUSTIFICATION IN WRAPPED TABLE CELLS
+\newcolumntype{x}[1]{>{\raggedright\arraybackslash}m{#1}}
+\tabulinesep=1.5mm
+
+% BLANK PAGE
+
+\makeatletter
+\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
+	\hbox{}
+	\vspace*{\fill}
+	\begin{center}
+		
+	\end{center}
+	\vspace{\fill}
+	\thispagestyle{empty}
+	\newpage
+	\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+\makeatother
+
+% PAGE STYLE
+
+% Front matter
+\fancypagestyle{front}{
+
+\fancyhf{}
+\fancyhead[LE]{\thepage}
+\fancyhead[RO]{\thepage}
+
+}
+
+% Main matter
+\fancypagestyle{main}{
+
+\fancyhf{}
+\fancyhead[RE]{\textsc{\chaptername\enspace\thechapter}}
+\fancyhead[LE]{\thepage}
+\fancyhead[LO]{\textsc{\leftmark}}
+\fancyhead[RO]{\thepage}
+
+}
+
+\newcommand{\thesisstyle}{
+
+\renewcommand{\bibname}{\uppercase{Bibliography}}
+
+%\renewcommand{\chaptertitlename}{Testing}
+
+% FONTS
+%\doublespacing
+%\onehalfspacing
+%\singlespace
+
+% PAGE LAYOUT
+
+% PART TITLE
+
+\titleformat{\part}[display]
+{\fontsize{60pt}{0pt}
+\selectfont} % Format
+{
+%\titlerule
+%\vspace{20pt}
+\thepart} % Label
+{10pt} % Sep
+{\fontsize{40pt}{0pt}\selectfont\textsc} % Before
+[\vspace{10pt}\titlerule] % After
+
+% CHAPTER TITLE
+
+\titleformat{\chapter}[display]
+{
+\renewcommand*\rmdefault{ppl}
+\normalfont} % Format
+{\filright
+%\marginpar{
+\fontsize{30pt}{0pt}
+%\textsc{\chaptertitlename}
+\fontsize{60pt}{0pt}
+\selectfont
+%\enspace
+%\oldstylenums{
+\thechapter} % Label
+{25pt} % Sep
+{\filright\Large\bfseries\uppercase} % Before
+[\vspace{3ex}\titlerule\vspace{2ex}] % After
+
+%\titlespacing{\chapter}{0pt}{*3}{*3}
+
+% SECTION TITLE
+
+\titleformat{\section}[hang]
+{\renewcommand*\rmdefault{ppl}\normalfont} % Format
+{\large\bfseries{\thesection}\enspace} % Label
+{5pt} % Sep
+{\large\bfseries\uppercase} % Before
+[]% After
+
+%\titlespacing*{\section}{0pt}{*5}{*4}
+
+% SUBSECTION TITLE
+
+\titleformat{\subsection}[hang]
+{\renewcommand*\rmdefault{ppl}\normalfont\sc} % Format
+{\large\bfseries{\thesubsection}\enspace}	% Label
+{5pt} % Sep
+{\large\bfseries\textsc} % Before
+% After
+
+%\titlespacing*{\subsection}{0pt}{*5}{*4}
+
+% SUBSUBSECTION TITLE
+
+\titleformat{\subsubsection}[hang]
+{\renewcommand*\rmdefault{ppl}\normalfont}
+{{\thesubsubsection}\enspace}
+{0pt}
+{\bfseries}
+
+%\titlespacing{\subsubsection}{0pt}{*4}{*3}
+
+
+% PARAGRAPH TITLE
+
+\titleformat{\paragraph}[runin]
+{\renewcommand*\rmdefault{ppl}\normalfont}
+{\oldstylenums{\thesubsubsection}\enspace}
+{0pt}
+{\textsc}
+
+%\titlespacing{\paragraph}{0pt}{*3}{*3}
+
+}
+
+% CONTENTS
+
+\newcommand{\contentsstyle}{
+
+\renewcommand{\contentsname}{\uppercase{Contents}}
+\renewcommand{\listfigurename}{\uppercase{List of Figures}}
+\renewcommand{\listtablename}{\uppercase{List of Tables}}
+
+}
+
+\contentsmargin{2.55em}
+
+\titlecontents{part} % part
+[0em] % left
+{\vspace{1em}} % above
+{\contentslabel{0em}} % before with label
+{\hspace*{0em}\uppercase} % before without label
+{\titlerule*{ }\contentspage} % filler and page
+[] % after
+
+\titlecontents{chapter} % chapter
+[1.5em] % left
+{\vspace{1.0em}} % above
+{\contentslabel{1.5em}\textsc} % before with label
+{\hspace*{-1.5em}\textsc} % before without label
+{\titlerule*{ }\contentspage} % filler and page
+[] % after
+
+\titlecontents{section} % section
+[4em] % left
+{} % above
+{\contentslabel{2.5em}\textsc} % before with label
+{\hspace*{-4em}\textsc} % before without label
+{\titlerule*{ }\contentspage} % filler and page
+[] % after
+
+\titlecontents{subsection} % subsection
+[6.5em] % left
+{} % above
+{\contentslabel{3.5em}\textsc} % before with label
+{\hspace*{-6.5em}\textsc} % before without label
+{\titlerule*{ }\contentspage} % filler and page
+[] % after
+
+\titlecontents{figure} % figure
+[2.5em] % left
+{\vspace{0em}} % above
+{\contentslabel{2.5em}\textsc} % before with label
+{\hspace*{-2.5em}\textsc} % before without label
+{\titlerule*{ }\contentspage} % filler and page
+[] % after
+
+\titlecontents{table} % table
+[2.5em] % left
+{\vspace{0em}} % above
+{\contentslabel{2.5em}\textsc} % before with label
+{\hspace*{-2.5em}\textsc} % before without label
+{\titlerule*{ }\contentspage} % filler and page
+[] % after
+
+
+% GEOMETRY
+%\geometry{left=4cm,right=4cm,top=3cm,bottom=3cm}
+\geometry{left=3.5cm,right=3.5cm,top=2.5cm,bottom=2.5cm,marginparwidth=3cm,marginparsep=0.2cm}
+
+

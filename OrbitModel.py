@@ -4,6 +4,7 @@
 
 from math import sin, cos, tan, atan2, sqrt, pi
 import numpy as np
+from numpy.linalg import inv
 
 class OrbitModel :
 
@@ -20,8 +21,8 @@ class OrbitModel :
 
             # Initialise sim variables
             self.Time = 0
-            self.TimeStep = 1
-            self.SampleTime = 1
+            self.TimeStep = 5
+            self.SampleTime = 5
             self.States = self.Initialise()
             self.Inputs = 0
             self.RunTime = NumOrbits*self.OrbitalElements['Orbital period']
@@ -47,9 +48,9 @@ class OrbitModel :
             # Orbital elements
             a = self.OrbitalElements['Semi-major axis']
             e = self.OrbitalElements['Eccentricity']
-            i = self.OrbitalElements['Inclination']
-            Omega = self.OrbitalElements['Argument of perigee']
-            omega = self.OrbitalElements['Right ascension']
+            i = self.OrbitalElements['Inclination']*pi/180
+            omega = self.OrbitalElements['Argument of perigee']*pi/180
+            Omega = self.OrbitalElements['Right ascension']*pi/180
 
             # Universal properties
             G = self.UniversalProps.GravitationalConstant
@@ -73,12 +74,14 @@ class OrbitModel :
             EA = atan2(sqrt(1 - e**2)*sin(TA), e + cos(TA))
 
             # Position in intermediate frame
-            rQ = np.array([[a*(cos(EA) - e)],
-                           [a*sqrt(1 - e**2)*sin(EA)],
+            p = a*(1 - e**2)
+            r = p/(1 + e*cos(TA))
+            rQ = np.array([[r*cos(TA)],
+                           [r*sin(TA)],
                            [0]])
-            vf = n*a/(1 - e*cos(EA))
-            vQ = vf*np.array([[-sin(EA)],
-                              [sqrt(1 - e**2)*cos(EA)],
+            vf = sqrt(mu/p)
+            vQ = vf*np.array([[-sin(TA)],
+                              [e + cos(TA)],
                               [0]])
             
             # Rotate to ECI frame
@@ -94,9 +97,15 @@ class OrbitModel :
 
             # Initial position and velocity in ECI frame
             R = np.mat(ROmega)*np.mat(Ri)*np.mat(Romega)
+            # R = R.T
             Position = R*rQ
             Velocity = R*vQ
-            States = np.concatenate( (Position, Velocity), axis=0 )
+
+            # Satellite properties
+            Attitude = np.array([[1], [0], [0], [0]])
+            AngVel = np.array([[0.0], [0.0], [0.0]])
+
+            States = np.concatenate( (Position, Velocity, Attitude, AngVel), axis=0 )
 
             # Save useful properties
             self.OrbitalElements['Gravitational parameter'] = mu
@@ -105,12 +114,27 @@ class OrbitModel :
             # Outputs
             return States.A1
       
-      def OrbitalDynamics( self, X, U, t ) :
+      def Dynamics( self, X, U, t ) :
             # Orbital dynamics model
 
             # Convert arrays to column vectors
             X = np.matrix(X).T
             #U = np.matrix(U).T
+
+            # Orbital dynamics
+            Xdot_orb = self.OrbitalDynamics( X, t )
+
+            # Attitude dynamics
+            Xdot_att = self.SatelliteDynamics( X, U, t )
+
+            # Combine states
+            Xdot = np.concatenate( (Xdot_orb, Xdot_att), axis=0 )
+
+            # State derivatives
+            return Xdot.A1
+
+      def OrbitalDynamics( self, X, t ) :
+            # Orbital dynamics
 
             # Gravitational acceleration
             r = np.linalg.norm(X[0:3])
@@ -118,8 +142,35 @@ class OrbitModel :
             g = -mu*X[0:3]/r**3
 
             # State derivatives
-            Xdot = np.concatenate( ( X[3:7], g ), axis=0 )
-            return Xdot.A1
+            Xdot = np.concatenate( ( X[3:6], g ), axis=0 )
+
+            return Xdot
+
+      def SatelliteDynamics( self, X, U, t ) :
+            # Satellite attitude Dynamics
+
+            # Satellite properties
+            I = self.SatProps.Inertia
+            mm = self.SatProps.MagneticMoment
+
+            # Moment
+            M = np.array([[0], [0], [0]])
+
+            # Angular acceleration
+            AngAcc = inv(np.mat(I))*(M - np.cross(X[10:13], I*X[10:13], axis=0))
+
+            # Questernion rates
+            RateMatrix = np.array([[0, -X[10], -X[11], -X[12]],
+                                    [X[10], 0, X[12], -X[11]],
+                                    [X[11], -X[12], 0, X[10]],
+                                    [X[12], X[11], -X[10], 0]])
+            
+            Quaternions = 0.5*np.mat(RateMatrix)*X[6:10]
+
+            # State derivatives
+            Xdot = np.concatenate( (Quaternions, AngAcc), axis=0 )
+
+            return Xdot
 
       def Integrate( self, X, U, t ) :
             # Integrate dynamic model
@@ -127,13 +178,13 @@ class OrbitModel :
             dt = self.TimeStep
 
             if self.Solver == 'Euler' :
-                  Xdot = self.OrbitalDynamics( X, U, t )
+                  Xdot = self.Dynamics( X, U, t )
                   X = X + dt*Xdot
             elif self.Solver == 'RK4' :
-                  k1 = self.OrbitalDynamics( X, U, t )
-                  k2 = self.OrbitalDynamics( X + dt*k1/2, U, t + dt/2 )
-                  k3 = self.OrbitalDynamics( X + dt*k2/2, U, t + dt/2 )
-                  k4 = self.OrbitalDynamics( X + dt*k3, U, t + dt )
+                  k1 = self.Dynamics( X, U, t )
+                  k2 = self.Dynamics( X + dt*k1/2, U, t + dt/2 )
+                  k3 = self.Dynamics( X + dt*k2/2, U, t + dt/2 )
+                  k4 = self.Dynamics( X + dt*k3, U, t + dt )
                   X = X + dt*(k1 + 2*k2 + 2*k3 + k4)/6
             
             t = round( (t + dt)/dt, 0 )*dt
@@ -189,3 +240,8 @@ class OrbitModel :
             LatLongAlt = np.array( [[Lat], [Long], [Alt]] )
 
             return LatLongAlt[:,0]
+
+      def ECEF2Geomagnetic( self, XECEF ) :
+            # Convert ECEF properties to geomagnetic
+
+            

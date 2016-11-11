@@ -14,16 +14,21 @@ from tqdm import tqdm
 from OrbitModel import OrbitModel
 import UniversalProps, EarthProps, SatProps
 import Data, Plots
+from Presets import PresetOrbits
 
 # Set parameters of orbit
-OrbitalElements = {'Semi-major axis' : 6978.1e3,
-    'Eccentricity' : 0.0,
-    'Inclination' : 10,
+OrbitalElements = {'Semi-major axis' : 26562.1e3,
+    'Eccentricity' : 0.74,
+    'Inclination' : 0,
     'Right ascension' : 0,
-    'Argument of perigee' : 0}
+    'Argument of perigee' : -90}
+
+# Or load orbit presets from file
+PresetOrbit = 'Molniya'
+OrbitalElements = PresetOrbits[PresetOrbit]
 
 # Number of orbits to simulate
-NumOrbits = 2
+NumOrbits = 0.2
 
 # Initialise simulation object
 Sim = OrbitModel( OrbitalElements, UniversalProps, EarthProps, SatProps, NumOrbits )
@@ -66,15 +71,17 @@ for i in xrange(1,NumSteps) :
 
 pbar.close()
 
+print(Data.States.shape)
+
 # Concatenate Data
-print(Data.Time.shape)
-Labels = ['Time', 'x', 'y', 'z', 'u', 'v', 'w', 'x_ecef', 'y_ecef', 'z_ecef', 'u_ecef', 'v_ecef', 'w_ecef', 'Lat', 'Long', 'Alt' ]
-AllData = np.column_stack( (Data.Time, Data.States.T, Data.StatesECEF.T, Data.LatLongAlt.T ) )
+# Labels = ['Time', 'x', 'y', 'z', 'u', 'v', 'w', 'x_ecef', 'y_ecef', 'z_ecef', 'u_ecef', 'v_ecef', 'w_ecef', 'Lat', 'Long', 'Alt' ]
+# AllData = np.column_stack( (Data.Time, Data.States.T, Data.StatesECEF.T, Data.LatLongAlt.T ) )
 
 # Save Data
-np.savetxt( 'Data.csv', AllData, delimiter=',' )
+# np.savetxt( 'Data.csv', AllData, delimiter=',' )
 
 # Plots
 Plots.Plot3DPath( Data )
 Plots.PlotGroundTrack( Data )
+Plots.PlotAttitude( Data )
 plt.show()
